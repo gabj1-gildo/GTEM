@@ -1,0 +1,2 @@
+<div class="pagination"><span>{{ $paginator->total() ? $paginator->firstItem().'–'.$paginator->lastItem() : '0' }} de {{ $paginator->total() }} registros</span>
+@if($paginator->hasPages())<div><button class="button secondary small" wire:click="previousPage" @disabled($paginator->onFirstPage())>Anterior</button><span>Página {{ $paginator->currentPage() }} de {{ $paginator->lastPage() }}</span><button class="button secondary small" wire:click="nextPage" @disabled(!$paginator->hasMorePages())>Próxima</button></div>@endif</div>

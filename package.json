@@ -1,0 +1,12 @@
+{
+  "name": "gtem",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-css.cjs"
+  },
+  "devDependencies": {
+    "tailwindcss": "4.3.0",
+    "@tailwindcss/postcss": "4.3.0",
+    "postcss": "8.5.15"
+  }
+}

@@ -1,0 +1,9 @@
+<div>
+<div class="page-heading"><div><span class="eyebrow">ADMINISTRAÇÃO</span><h1>Perfis e permissões</h1><p>Defina os acessos necessários para cada função da equipe.</p></div></div>
+@if($roleId)<section class="panel form-panel"><div class="panel-heading"><h2>Configurar {{ $roles->firstWhere('id',$roleId)?->name }}</h2><button class="button subtle" wire:click="cancel">Fechar</button></div>
+<form wire:submit="save"><div class="permission-list">@foreach($permissions as $permission)<label class="checkbox-label"><input type="checkbox" wire:model="selected" value="{{ $permission->id }}"> {{ $permission->name }}</label>@endforeach</div>
+@error('selected')<p class="field-error">{{ $message }}</p>@enderror @error('selected.*')<p class="field-error">{{ $message }}</p>@enderror
+<div class="field"><label for="reason">Justificativa</label><textarea id="reason" wire:model="reason" rows="2" required></textarea>@error('reason')<span class="field-error">{{ $message }}</span>@enderror</div><p class="muted">Acesso ao painel é mantido. Permissão de edição inclui consulta.</p><div class="form-actions"><button type="button" class="button secondary" wire:click="cancel">Cancelar</button><button class="button primary" wire:loading.attr="disabled">Salvar permissões</button></div></form></section>@endif
+<div class="role-grid">@foreach($roles as $role)<section class="panel role-card"><div class="role-icon"><x-icon name="shield"/></div><h2>{{ $role->name }}</h2><p class="muted">{{ $role->permissions->count() }} permissões</p><ul>@foreach($role->permissions as $permission)<li>{{ $permission->name }}</li>@endforeach</ul>
+@if($role->code === 'administrador')<span class="badge neutral">Perfil protegido do sistema</span>@else<button class="button secondary" wire:click="edit({{ $role->id }})">Configurar permissões</button>@endif</section>@endforeach</div>
+</div>

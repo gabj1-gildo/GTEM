@@ -1,0 +1,39 @@
+name: Testes GTEM
+on: [push, pull_request]
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [sqlite, pgsql]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: gtem_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testing-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, pdo_pgsql, intl
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - name: PHPUnit
+        run: php vendor/phpunit/phpunit/phpunit --testdox
+        env:
+          DB_CONNECTION: ${{ matrix.database }}
+          DB_DATABASE: ${{ matrix.database == 'sqlite' && ':memory:' || 'gtem_test' }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_USERNAME: postgres
+          DB_PASSWORD: testing-only

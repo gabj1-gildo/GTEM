@@ -1,0 +1,16 @@
+<div>
+<div class="page-heading"><div><span class="eyebrow">ADMINISTRAÇÃO</span><h1>Usuários</h1><p>Controle quem acessa o ambiente administrativo.</p></div><button class="button primary" wire:click="create"><x-icon name="plus"/> Novo usuário</button></div>
+@if($showForm)<section class="panel form-panel"><div class="panel-heading"><h2>{{ $editingId ? 'Editar usuário' : 'Novo usuário' }}</h2><button class="button subtle" wire:click="cancel">Fechar</button></div>
+<form wire:submit="save"><div class="form-grid">
+<div class="field"><label for="name">Nome</label><input id="name" wire:model="name" required autocomplete="off">@error('name')<span class="field-error">{{ $message }}</span>@enderror</div>
+<div class="field"><label for="email">E-mail</label><input id="email" type="email" wire:model="email" required autocomplete="off">@error('email')<span class="field-error">{{ $message }}</span>@enderror</div>
+<div class="field"><label for="roleId">Perfil</label><select id="roleId" wire:model="roleId"><option value="">Selecione</option>@foreach($roles as $role)<option value="{{ $role->id }}">{{ $role->name }}</option>@endforeach</select>@error('roleId')<span class="field-error">{{ $message }}</span>@enderror</div>
+<div class="field"><label for="password">{{ $editingId ? 'Nova senha (opcional)' : 'Senha inicial' }}</label><input id="password" type="password" wire:model="password" autocomplete="new-password"><small>12+ caracteres, maiúsculas, minúsculas e números.</small>@error('password')<span class="field-error">{{ $message }}</span>@enderror</div>
+<div class="field"><label class="checkbox-label"><input type="checkbox" wire:model="active"> Acesso ativo</label>@error('active')<span class="field-error">{{ $message }}</span>@enderror</div>
+@if($editingId)<div class="field full-width"><label for="reason">Justificativa da alteração</label><textarea id="reason" wire:model="reason" rows="2" required></textarea>@error('reason')<span class="field-error">{{ $message }}</span>@enderror</div>@endif
+</div><div class="form-actions"><button type="button" class="button secondary" wire:click="cancel">Cancelar</button><button class="button primary" wire:loading.attr="disabled">Salvar usuário</button></div></form></section>@endif
+<section class="panel"><div class="table-toolbar"><div class="table-title"><h2>Equipe administrativa</h2><span class="count-pill">{{ $users->total() }}</span></div><div class="search-input"><x-icon name="search"/><input type="search" wire:model.live.debounce.300ms="search" aria-label="Buscar usuário" placeholder="Buscar nome ou e-mail..."></div></div>
+<div class="table-scroll"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Situação</th><th class="align-right">Ações</th></tr></thead><tbody>
+@forelse($users as $user)<tr wire:key="user-{{ $user->id }}"><td><strong>{{ $user->name }}</strong><small class="cell-subtitle">{{ $user->email }}</small></td><td>{{ $user->role->name }}</td><td><span class="badge {{ $user->active ? 'green' : 'neutral' }}">{{ $user->active ? 'Ativo' : 'Inativo' }}</span></td><td class="align-right"><button class="text-link" wire:click="edit({{ $user->id }})">Editar</button></td></tr>@empty<tr><td colspan="4" class="empty-inline">Nenhum usuário encontrado.</td></tr>@endforelse
+</tbody></table></div>@include('components.pagination',['paginator' => $users])</section>
+</div>
