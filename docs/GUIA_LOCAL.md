@@ -1,6 +1,6 @@
 # GTEM — Gestão do Transporte Escolar Municipal
 
-Versão de desenvolvimento **0.3 - Linhas, frota e operações**.
+Versão de desenvolvimento **0.3.1 - Linhas, frota e operações com MySQL**.
 
 Aplicação administrativa baseada no planejamento consolidado v2. Esta versão entrega a fundação, o cadastro de pessoas e o planejamento de transporte; o ciclo de matrícula digital ainda não está implementado.
 
@@ -32,14 +32,14 @@ O cadastro ativo de um aluno **não é uma matrícula de transporte**.
 - PHP 8.4 e Laravel 12.
 - Livewire 4, com Alpine fornecido pelo próprio Livewire.
 - Tailwind CSS e folhas de estilo locais.
-- PostgreSQL como destino previsto; SQLite para demonstração e testes locais.
+- MySQL 8.0+ como banco principal; SQLite para testes rápidos e leitura da instalação anterior.
 - PHPUnit 11.
 
 O planejamento sugeria Livewire 3. A fundação adotou Livewire 4. As versões PHP estão fixadas em `composer.lock`. Os assets já compilados acompanham o código.
 
 ## Executar uma cópia nova
 
-Requisitos: PHP 8.4, Composer 2 e extensões usuais do Laravel, incluindo `pdo_sqlite` para o modo local ou `pdo_pgsql` para PostgreSQL.
+Requisitos: MySQL 8.0+, PHP 8.4, Composer 2 e extensões usuais do Laravel, incluindo `pdo_mysql`. Instale também `pdo_sqlite` para os testes rápidos e a importação da instalação anterior.
 
 Na pasta da aplicação:
 
@@ -48,22 +48,23 @@ composer install
 Copy-Item .env.example .env
 ```
 
-Configure o banco no arquivo de ambiente. Para demonstração local:
+Crie um banco MySQL vazio chamado `gtem_db`, com charset `utf8mb4` e collation `utf8mb4_unicode_ci`. Configure o arquivo de ambiente; para o MySQL local do Laragon:
 
 ```dotenv
 APP_ENV=local
 APP_URL=http://127.0.0.1:8000
-DB_CONNECTION=sqlite
-DB_DATABASE=database/database.sqlite
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=gtem_db
+DB_USERNAME=root
+DB_PASSWORD=
 SESSION_DRIVER=database
 ```
 
-Crie o banco SQLite somente se ele ainda não existir:
+Em uma instalação nova:
 
 ```powershell
-if (!(Test-Path database/database.sqlite)) {
-    New-Item -ItemType File database/database.sqlite
-}
 php artisan key:generate
 php artisan migrate --seed
 php artisan gtem:admin
@@ -84,7 +85,7 @@ Esse comando não cria usuários, alunos ou responsáveis.
 
 ## Atualizar uma instalação existente
 
-Faça backup do banco e guarde a chave da aplicação separadamente, com acesso restrito. Preserve o arquivo de ambiente e os arquivos locais de dados.
+Faça backup do banco e guarde a chave da aplicação separadamente, com acesso restrito. Preserve o arquivo de ambiente e os arquivos locais de dados. Se a instalação anterior usa SQLite, siga primeiro [MYSQL.md](MYSQL.md); a importação precisa de um destino vazio, antes do seeder.
 
 ```powershell
 composer install
@@ -137,7 +138,7 @@ Os testes usam um banco SQLite em memória e não alteram o banco local. A class
 
 Cenários incluem duplicidade de CPF, datas, criptografia, autorização, perfis de consulta, bloqueio de edição concorrente, duplicidade de vínculos, responsável principal, encerramento e preservação de histórico.
 
-Veja `docs/VALIDACAO.md` para os resultados desta entrega. Os testes locais não substituem a validação em PostgreSQL e em um ambiente de implantação.
+Veja `docs/VALIDACAO.md` para os resultados desta entrega e `docs/MYSQL.md` para executar a suíte com MySQL. A validação local não substitui a conferência da conexão e das permissões do servidor de implantação.
 
 ## Estilos
 

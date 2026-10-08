@@ -7,7 +7,8 @@ abstract class TestCase extends BaseTestCase
     public function createApplication()
     {
         $app=parent::createApplication();
-        if (!$app->environment('testing') || !in_array($app['config']->get('database.connections.'.$app['config']->get('database.default').'.database'),[':memory:','gtem_test'],true))
+        // Resolve DB_URL too, before RefreshDatabase is allowed to run migrations.
+        if (!$app->environment('testing') || !in_array($app['db']->connection()->getDatabaseName(),[':memory:','gtem_test'],true))
             throw new \RuntimeException('Tests require :memory: or an isolated gtem_test database.');
         return $app;
     }

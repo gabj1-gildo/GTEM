@@ -1,4 +1,25 @@
-# Validação da entrega 0.3
+# Validação da entrega 0.3.1 — MySQL
+
+Execução local em 08/10/2026. O `.env` já continha a configuração de um servidor MySQL externo; seus valores, credenciais e `APP_KEY` foram preservados.
+
+- MySQL **8.0.30**, InnoDB, PHP 8.4.15: **63 testes aprovados e 267 assertions**, sem falhas.
+- SQLite em memória: **58 testes aprovados, 248 assertions e 5 testes específicos de MySQL pulados**.
+- Todos os cenários anteriores de pessoas, vínculos, linhas, veículos, operações e permissões passaram no MySQL.
+- Novos cenários: pesquisa textual e numérica compatível, unicidade de principal no banco, múltiplas versões encerradas e importação transacional.
+- O importador foi exercitado com dados de teste para conferir IDs, senhas, criptografia, datas, simulação sem escrita, recusa de destino ocupado, chave incompatível e reversão por falha de vínculo.
+- Uma cópia consistente do SQLite existente foi importada e conferida em um banco MySQL local separado: **1 usuário, 2 alunos, 1 responsável e 1 vínculo**, além de cadastros escolares, permissões, revisões, auditoria e sessões.
+- A comparação conferiu todo o conteúdo copiado, sem recalcular senhas ou recriptografar os campos. O arquivo SQLite original e o `.env` permaneceram inalterados.
+- Backups do SQLite e do ambiente foram mantidos fora do repositório. Dados pessoais e credenciais não integram os commits.
+
+## Pendência de conexão externa
+
+A conexão ao servidor definido no `.env` foi recusada pelas permissões de rede desta sessão (SQLSTATE 2002, socket proibido). Por isso, **não foi aplicada nenhuma migration nem importação naquele servidor**. A aprovação dos testes se refere ao MySQL do Laragon e ao banco separado de validação.
+
+Para concluir no destino externo, execute os passos de [MYSQL.md](MYSQL.md) em um terminal com acesso ao servidor. Verifique se o destino está vazio antes da importação. O `.env` não foi redirecionado ao banco de validação.
+
+O workflow foi atualizado para SQLite e MySQL 8.0. A execução externa de CI e testes de carga/concorrência com múltiplos processos não fazem parte desta validação local.
+
+## Histórico — entrega 0.3
 
 Execução local em 08/10/2026, horário de Brasília.
 

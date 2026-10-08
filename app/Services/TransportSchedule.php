@@ -9,7 +9,7 @@ final class TransportSchedule
     public static function lock(): void
     {
         // All transport writes take this single lock before locking entity rows.
-        // PostgreSQL serializes schedule decisions; SQLite serializes database writes.
+        // MySQL/InnoDB and PostgreSQL serialize decisions; SQLite serializes writes.
         DB::table('transport_locks')->where('id',1)->lockForUpdate()->firstOrFail();
     }
     public static function hasDay(string $start,string $end,array $weekdays): bool

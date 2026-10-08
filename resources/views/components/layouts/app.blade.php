@@ -51,7 +51,7 @@
             @if(session('success'))<div class="notice success" role="status">{{ session('success') }}</div>@endif
             {{ $slot }}
         </main>
-        <footer class="page-footer"><span>Gestão do Transporte Escolar Municipal</span><span>GTEM · v0.3</span></footer>
+        <footer class="page-footer"><span>Gestão do Transporte Escolar Municipal</span><span>GTEM · v0.3.1</span></footer>
     </div>
 </div>
 @livewireScripts

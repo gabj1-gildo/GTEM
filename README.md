@@ -4,7 +4,7 @@ Sistema para apoiar a Secretaria Municipal de Transporte Escolar no cadastro de 
 
 O projeto também prevê matrícula e rematrícula online: o responsável deverá baixar um termo em PDF, assiná-lo externamente pelo GOV.BR e anexá-lo para análise de um servidor público.
 
-**Versão atual: 0.3 — em desenvolvimento.** A área administrativa, o cadastro de pessoas e o planejamento do transporte estão implementados. O portal do responsável e o ciclo de matrícula serão desenvolvidos nas próximas etapas.
+**Versão atual: 0.3.1 — MySQL, em desenvolvimento.** A área administrativa, o cadastro de pessoas e o planejamento do transporte estão implementados. O portal do responsável e o ciclo de matrícula serão desenvolvidos nas próximas etapas.
 
 ## Funcionalidades disponíveis
 
@@ -26,12 +26,12 @@ O cadastro de um aluno ainda não representa uma matrícula de transporte. A cap
 - PHP 8.4 e Laravel 12.
 - Livewire 4, com Alpine integrado.
 - Tailwind CSS e folhas de estilo locais.
-- SQLite para execução e testes locais; PostgreSQL como banco previsto para implantação.
+- MySQL 8.0 ou superior com InnoDB e `utf8mb4` como banco principal; SQLite para testes rápidos e importação da instalação anterior.
 - PHPUnit 11 e workflow de testes no GitHub Actions.
 
 ## Executar localmente
 
-Requisitos: Git, PHP 8.4, Composer 2 e as extensões exigidas pelo Laravel, incluindo `pdo_sqlite`. No Windows, os comandos abaixo podem ser executados pelo terminal do Laragon com PHP e Composer disponíveis no `PATH`.
+Requisitos: Git, MySQL 8.0+, PHP 8.4, Composer 2 e as extensões exigidas pelo Laravel, incluindo `pdo_mysql`. Os testes e a importação também usam `pdo_sqlite`. No Windows, os comandos abaixo podem ser executados pelo terminal do Laragon com PHP e Composer disponíveis no `PATH`.
 
 ### 1. Obter o código e instalar dependências
 
@@ -42,26 +42,35 @@ composer install
 Copy-Item .env.example .env
 ```
 
-### 2. Configurar o banco local
+### 2. Configurar o MySQL
+
+Crie um banco vazio pelo gerenciador do MySQL, se ele ainda não existir:
+
+```sql
+CREATE DATABASE gtem_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
 No arquivo `.env`, ajuste:
 
 ```dotenv
 APP_ENV=local
 APP_URL=http://127.0.0.1:8000
-DB_CONNECTION=sqlite
-DB_DATABASE=database/database.sqlite
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=gtem_db
+DB_USERNAME=root
+DB_PASSWORD=
 SESSION_DRIVER=database
 ```
+
+O exemplo usa a instalação local do Laragon. Para outro servidor, informe o host, a porta, o usuário e a senha fornecidos pelo administrador desse banco.
 
 ### 3. Preparar e iniciar a aplicação
 
 Estes comandos são destinados a uma instalação nova:
 
 ```powershell
-if (!(Test-Path database/database.sqlite)) {
-    New-Item -ItemType File database/database.sqlite
-}
 php artisan key:generate
 php artisan migrate --seed
 php artisan gtem:admin
@@ -72,7 +81,7 @@ Abra [http://127.0.0.1:8000/entrar](http://127.0.0.1:8000/entrar). O comando `gt
 
 Os arquivos CSS compilados estão versionados, portanto não é necessário executar npm para iniciar a aplicação. Para alterar e recompilar o estilo principal, use `npm install` e `npm run build`.
 
-Em uma instalação existente, preserve o `.env`, o banco e a `APP_KEY`. Não execute `key:generate` novamente nem `migrate:fresh`: a chave existente é necessária para ler os dados criptografados. Consulte o [guia local](docs/GUIA_LOCAL.md) para atualização, PostgreSQL e detalhes de configuração.
+Em uma instalação existente, preserve o banco e a `APP_KEY`. Não execute `key:generate` novamente nem `migrate:fresh`: a chave existente é necessária para ler os dados criptografados. Para trocar SQLite por MySQL, siga o [guia de migração](docs/MYSQL.md) antes de executar o seeder ou cadastrar usuários no destino.
 
 ## Primeiro uso
 
@@ -90,9 +99,9 @@ Os perfis iniciais são Administrador, Gestor, Operador e Consulta/Auditoria. As
 php vendor/phpunit/phpunit/phpunit --testdox
 ```
 
-Os testes locais usam SQLite em memória, sem alterar o banco da aplicação. Na validação da versão 0.3, em 08/10/2026, passaram **55 testes e 240 verificações**.
+O comando acima usa SQLite em memória, sem alterar o banco da aplicação. Os testes específicos de importação são executados quando o destino é MySQL. A validação da versão 0.3.1 no MySQL 8.0.30 aprovou **63 testes e 267 verificações**.
 
-O workflow em [`.github/workflows/tests.yml`](.github/workflows/tests.yml) configura execução com SQLite e PostgreSQL. A validação já realizada neste ambiente foi em SQLite; os resultados e limites estão em [docs/VALIDACAO.md](docs/VALIDACAO.md).
+O workflow em [`.github/workflows/tests.yml`](.github/workflows/tests.yml) executa com SQLite e MySQL 8.0. Veja [como testar com MySQL](docs/MYSQL.md) e os [resultados da validação](docs/VALIDACAO.md).
 
 ## Próximas etapas
 
@@ -123,6 +132,7 @@ A assinatura será realizada fora do sistema; não há integração direta com o
 ## Documentação
 
 - [Guia de execução, atualização e uso](docs/GUIA_LOCAL.md).
+- [MySQL: configuração, importação do SQLite e testes](docs/MYSQL.md).
 - [Etapa 02 — alunos e responsáveis](docs/ETAPA_02.md).
 - [Etapa 03 — linhas, frota e operações](docs/ETAPA_03.md).
 - [Resultados e limites da validação](docs/VALIDACAO.md).

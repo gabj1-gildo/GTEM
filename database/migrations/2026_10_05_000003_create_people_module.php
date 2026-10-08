@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\{DB, Schema};
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void
@@ -40,9 +40,8 @@ return new class extends Migration {
             $t->index(['student_id', 'ended_at']);
             $t->index(['guardian_id', 'ended_at']);
         });
-        // PostgreSQL and SQLite both support these partial unique indexes.
-        DB::statement('CREATE UNIQUE INDEX links_open_pair_unique ON guardian_student_links (student_id, guardian_id) WHERE ended_at IS NULL');
-        DB::statement('CREATE UNIQUE INDEX links_open_primary_unique ON guardian_student_links (student_id) WHERE ended_at IS NULL AND is_primary = true');
+        // Uniqueness constraints are installed by the incremental 000005 migration,
+        // using generated columns on MySQL and partial indexes on SQLite/PostgreSQL.
         Schema::create('person_revisions', function (Blueprint $t) {
             $t->id();
             $t->string('person_type', 20);

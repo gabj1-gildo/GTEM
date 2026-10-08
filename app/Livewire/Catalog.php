@@ -105,7 +105,8 @@ class Catalog extends Component
         $query = $model::query();
         if (($def['search'] ?? '') && $this->search !== '') {
             $field = $def['search']; $value = mb_strtolower(mb_substr($this->search, 0, 100));
-            $query->whereRaw("LOWER(CAST($field AS TEXT)) LIKE ?", ['%'.$value.'%']);
+            $cast = $query->getConnection()->getDriverName() === 'mysql' ? 'CHAR' : 'TEXT';
+            $query->whereRaw("LOWER(CAST($field AS $cast)) LIKE ?", ['%'.$value.'%']);
         }
         if ($this->status !== '' && isset($def['fields']['active'])) $query->where('active', $this->status === 'active');
         $options = [];

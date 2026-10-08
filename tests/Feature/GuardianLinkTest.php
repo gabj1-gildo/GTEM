@@ -81,6 +81,23 @@ class GuardianLinkTest extends TestCase
         $this->assertDatabaseCount('guardian_student_links',2);
         $this->assertDatabaseHas('audit_events',['action'=>'vinculo_versionado','entity_id'=>$new->id]);
     }
+    public function test_database_also_prevents_two_current_primary_guardians(): void
+    {
+        $link=$this->link();
+        $other=app(PeopleService::class)->save('responsaveis',['name'=>'Segundo responsável','active'=>true]);
+        $duplicate=$link->replicate(); $duplicate->guardian_id=$other->id;
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        $duplicate->save();
+    }
+    public function test_multiple_closed_versions_remain_allowed(): void
+    {
+        $first=$this->link();
+        $new=app(GuardianLinkService::class)->save($this->student->id,$this->guardian->id,$this->data(['can_request'=>false]),$first->id);
+        app(GuardianLinkService::class)->save($this->student->id,$this->guardian->id,$this->data(),$new->id);
+        $this->assertDatabaseCount('guardian_student_links',3);
+        $this->assertSame(1,GuardianStudentLink::current()->count());
+        $this->assertSame(2,GuardianStudentLink::whereNotNull('ended_at')->count());
+    }
     public function test_stale_link_edit_does_not_close_or_change_current_version(): void
     {
         $first=$this->link();
