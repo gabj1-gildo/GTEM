@@ -71,7 +71,7 @@ class Catalog extends Component
         $data = array_intersect_key($data, $def['fields']);
         try {
             DB::transaction(function () use ($model, $table, $data) {
-                if (in_array($this->resource,['anos-letivos','turnos'])) \App\Services\TransportSchedule::lock();
+                if (in_array($this->resource,['anos-letivos','turnos','escolas','series','ofertas'])) \App\Services\TransportSchedule::lock();
                 $record = $this->editingId ? $model::lockForUpdate()->findOrFail($this->editingId) : new $model;
                 $before = $record->only(array_keys($this->definition()['fields']));
                 if ($record->exists && (($before['active'] ?? false) && !($data['active'] ?? true) ||
@@ -88,6 +88,7 @@ class Catalog extends Component
                     \App\Models\AcademicYear::whereKey($data['academic_year_id'])->where('status', 'ENCERRADO')->exists())
                     throw ValidationException::withMessages(['form.academic_year_id' => 'O ano letivo está encerrado.']);
                 app(\App\Services\TransportService::class)->guardReference($this->resource,$record,$data);
+                app(\App\Services\EnrollmentReferences::class)->guard($this->resource,$record,$data);
                 $record->fill($data)->save();
                 Audit::record($this->editingId ? 'cadastro_alterado' : 'cadastro_criado', $table, $record->id, $before, $record->only(array_keys($data)), $this->reason ?: null);
             });

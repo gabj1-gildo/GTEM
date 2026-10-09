@@ -27,6 +27,7 @@
 /storage/framework/cache/data/*
 /storage/framework/sessions/*
 /storage/framework/views/*
+/storage/framework/testing/
 /bootstrap/cache/*.php
 /.phpunit.cache/
 /phpunit-result.xml

@@ -28,6 +28,12 @@ class AccessSeeder extends Seeder
             'alocacoes.gerenciar' => 'Alocar e liberar veículos nas operações',
         ];
         $newCodes = [];
+        $permissions += [
+            'matriculas.visualizar'=>'Consultar matrículas e histórico',
+            'matriculas.editar'=>'Preparar matrículas e anexar termos',
+            'matriculas.aprovar'=>'Aprovar, transferir e encerrar matrículas',
+            'matriculas.documentos'=>'Consultar termos assinados das matrículas',
+        ];
         foreach ($permissions as $code => $name) {
             $permission = Permission::firstOrCreate(['code' => $code], ['name' => $name]);
             if ($permission->wasRecentlyCreated) $newCodes[] = $code;
@@ -39,6 +45,7 @@ class AccessSeeder extends Seeder
             'consulta' => ['Consulta / Auditoria', ['painel.visualizar','cadastros.visualizar','auditoria.visualizar']],
         ];
         foreach ($roles as $code => [$name, $codes]) {
+            $codes = array_unique([...$codes,'matriculas.visualizar',...($code==='consulta' ? [] : ['matriculas.editar','matriculas.documentos']),...(in_array($code,['administrador','gestor']) ? ['matriculas.aprovar'] : [])]);
             $codes = array_unique([...$codes, 'pessoas.visualizar', ...($code === 'consulta' ? [] : ['pessoas.editar', 'vinculos.gerenciar'])]);
             $codes = array_unique([...$codes, 'transporte.visualizar', ...($code === 'consulta' ? [] : ['transporte.editar','frota.editar','alocacoes.gerenciar'])]);
             $role = Role::firstOrCreate(['code' => $code], ['name' => $name]);

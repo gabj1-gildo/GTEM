@@ -1,4 +1,23 @@
-# Validação da entrega 0.3.1 — MySQL
+# Validação da entrega 0.4 — Matrículas anuais
+
+Execução local em 08/10/2026, horário de Brasília. A migração anterior para MySQL foi confirmada pelo usuário. Esta entrega adiciona o módulo administrativo de matrículas.
+
+- MySQL **8.0.30**, PHP **8.4.15**: **85 testes aprovados, 367 assertions**, sem falhas.
+- SQLite em memória: **80 testes aprovados, 348 assertions e 5 testes específicos de MySQL pulados**, sem falhas.
+- **22 cenários novos** de matrículas: rascunhos sem reserva; termo e conferência obrigatórios; unicidade aluno/ano no serviço e no banco; lotação futura; compartilhamento de vaga em períodos distintos; lacunas em dias úteis e finais de semana; oferta escolar e responsável autorizado; revogação antes da aprovação; transferências e reversão; término com vigência; substituição atômica por veículo suficiente; versões desatualizadas; tipo/integridade de PDF; acesso privado e escopo de download; restrições de perfis; fluxo Livewire de criação, upload e aprovação; tentativa de transferência corrigida com o mesmo upload; ida e volta; proteção de referências históricas.
+- Os testes anteriores de autenticação, pessoas, vínculos, transporte e importação também passaram.
+- Migration incremental e seeder aplicados a uma **cópia MySQL isolada com os dados anteriores**, preservando integralmente usuários, senhas, alunos, responsáveis, vínculos, revisões e cadastros escolares por comparação de conteúdo.
+- As três novas tabelas foram verificadas e ficaram vazias nessa cópia. O `.env` permaneceu inalterado.
+- Sintaxe PHP verificada em **85 arquivos**. `git diff --check` sem erros.
+- Rotas, renderização e ações foram exercitadas por testes HTTP/Livewire; não foi realizada uma nova inspeção visual em navegador nem teste de carga com múltiplos processos.
+
+## Aplicação no servidor configurado
+
+A conexão definida no `.env` continua bloqueada pelas permissões de rede desta sessão (SQLSTATE 2002, socket proibido). **A migration 000006 e as novas permissões não foram aplicadas nesse servidor por esta sessão.** Execute os três comandos de atualização em [ETAPA_04.md](ETAPA_04.md) no terminal que já tem acesso ao MySQL. A importação SQLite anterior não precisa ser repetida.
+
+O portal do responsável, a geração do termo e a fila de solicitações ainda não fazem parte desta entrega. A assinatura do PDF é conferida pelo servidor público, sem verificação criptográfica automática. O CI remoto não foi executado por esta sessão.
+
+## Histórico — entrega 0.3.1 - MySQL
 
 Execução local em 08/10/2026. O `.env` já continha a configuração de um servidor MySQL externo; seus valores, credenciais e `APP_KEY` foram preservados.
 

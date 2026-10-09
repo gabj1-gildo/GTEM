@@ -23,6 +23,10 @@ class Dashboard extends Component
                 ['Operações vigentes',\App\Models\LineOperation::where('status','ATIVA')->whereDate('starts_on','<=',today())->whereDate('ends_on','>=',today())->count(),'operacoes','Dentro do período de atendimento'],
             ] : [],
             'years' => $canView ? AcademicYear::orderByDesc('year')->limit(4)->get() : collect(),
+            'enrollmentStats' => auth()->user()->can('matriculas.visualizar') ? [
+                ['Rascunhos de matrícula',\App\Models\Enrollment::where('status','RASCUNHO')->count(),'Aguardando efetivação'],
+                ['Alunos com atendimento vigente',\App\Models\EnrollmentPeriod::reserved()->whereDate('starts_on','<=',today())->whereDate('ends_on','>=',today())->distinct()->count('enrollment_id'),'Dentro da vigência aprovada'],
+            ] : [],
             'events' => auth()->user()->can('auditoria.visualizar') ? AuditEvent::with('actor')->latest('id')->limit(5)->get() : collect(),
         ])->layout('components.layouts.app',['title' => 'Visão geral']);
     }

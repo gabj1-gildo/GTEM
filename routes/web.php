@@ -14,6 +14,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth','active'])->group(function () {
     Route::post('/sair', [AuthController::class, 'logout'])->name('logout');
     Route::get('/painel', Dashboard::class)->middleware('can:painel.visualizar')->name('dashboard');
+    Route::get('/matriculas', App\Livewire\Enrollments::class)->middleware('can:matriculas.visualizar')->name('enrollments');
+    Route::get('/matriculas/{enrollmentId}', App\Livewire\EnrollmentDetail::class)->whereNumber('enrollmentId')->middleware('can:matriculas.visualizar')->name('enrollments.show');
+    Route::get('/matriculas/{enrollmentId}/termos/{periodId}', App\Http\Controllers\EnrollmentTermController::class)->whereNumber(['enrollmentId','periodId'])->middleware('can:matriculas.visualizar')->name('enrollments.term');
     Route::get('/pessoas/{resource}', App\Livewire\People::class)->middleware('can:pessoas.visualizar')->name('people');
     Route::get('/pessoas/{resource}/{personId}', App\Livewire\PersonDetail::class)->whereNumber('personId')->middleware('can:pessoas.visualizar')->name('people.show');
     Route::get('/transporte/operacoes/{operationId}', App\Livewire\OperationDetail::class)->whereNumber('operationId')->middleware('can:transporte.visualizar')->name('transport.operation');

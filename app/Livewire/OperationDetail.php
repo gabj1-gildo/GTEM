@@ -18,6 +18,7 @@ class OperationDetail extends Component
     public array $allocation=[];
     public string $effectiveFrom='';
     public string $releaseReason='';
+    public string $replacementVehicleId='';
 
     public function mount(int $operationId): void
     {
@@ -45,16 +46,19 @@ class OperationDetail extends Component
         abort_if($a->cancelled_at || $a->ends_on->lt(today()),422);
         $this->releaseId=$id; $this->releaseVersion=$a->version;
         $this->effectiveFrom=max(today()->format('Y-m-d'),$a->starts_on->format('Y-m-d'));
-        $this->releaseReason=''; $this->resetValidation();
+        $this->releaseReason=''; $this->replacementVehicleId=''; $this->resetValidation();
     }
     public function cancelRelease(): void { $this->releaseId=null; $this->resetValidation(); }
     public function release(): void
     {
         Gate::authorize('alocacoes.gerenciar'); abort_unless($this->releaseId,422); $this->resetValidation();
-        try { app(AllocationService::class)->release($this->operationId,$this->releaseId,$this->releaseVersion,$this->effectiveFrom,$this->releaseReason); }
+        try {
+            Validator::make(['replacement_vehicle_id'=>$this->replacementVehicleId],['replacement_vehicle_id'=>'nullable|integer|exists:vehicles,id'])->validate();
+            app(AllocationService::class)->release($this->operationId,$this->releaseId,$this->releaseVersion,$this->effectiveFrom,$this->releaseReason,$this->replacementVehicleId!=='' ? (int)$this->replacementVehicleId : null);
+        }
         catch (ValidationException $e) { $this->errorsFor($e,'release'); return; }
         $this->releaseId=null;
-        session()->flash('success','Liberação registrada. Você já pode alocar o veículo substituto a partir da data informada.');
+        session()->flash('success',$this->replacementVehicleId!=='' ? 'Substituição confirmada. A capacidade atende às matrículas do período.' : 'Liberação registrada. Você já pode alocar outro veículo a partir da data informada.');
     }
     private function errorsFor(ValidationException $e,string $prefix): void
     {

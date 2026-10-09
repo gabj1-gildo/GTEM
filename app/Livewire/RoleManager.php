@@ -39,6 +39,12 @@ class RoleManager extends Component
                 $this->selected[] = (string) Permission::where('code','transporte.visualizar')->value('id');
             }
             $before = $role->permissions()->pluck('code')->all();
+            if (Permission::whereIn('id',$this->selected)->whereIn('code',['matriculas.editar','matriculas.aprovar','matriculas.documentos'])->exists()) {
+                $this->selected[] = (string) Permission::where('code','matriculas.visualizar')->value('id');
+            }
+            if (Permission::whereIn('id',$this->selected)->where('code','matriculas.aprovar')->exists()) {
+                $this->selected[] = (string) Permission::where('code','matriculas.documentos')->value('id');
+            }
             $role->permissions()->sync(array_unique($this->selected));
             Audit::record('permissoes_alteradas','roles',$role->id,['permissions' => $before],
                 ['permissions' => $role->permissions()->pluck('code')->all()],$this->reason);

@@ -37,6 +37,10 @@ final class SqliteToMysqlImport
             $report=DB::transaction(function () use ($source,$dryRun,&$table) {
                 // Lock also coordinates simultaneous import attempts against this destination.
                 TransportSchedule::lock(); $schema=DB::connection()->getSchemaBuilder();
+                foreach (['enrollments','enrollment_periods','enrollment_period_operation'] as $newTable) {
+                    if ($schema->hasTable($newTable) && DB::table($newTable)->exists())
+                        throw new RuntimeException('O destino já contém dados em '.$newTable.'. A importação não sobrescreve cadastros.');
+                }
                 $report=[]; $copies=[]; $columnTypes=[];
                 foreach (self::TABLES as $table) {
                     if (!$schema->hasTable($table)) throw new RuntimeException('Execute php artisan migrate no destino antes de importar.');

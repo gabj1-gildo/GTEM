@@ -1,8 +1,8 @@
 # GTEM — Gestão do Transporte Escolar Municipal
 
-Versão de desenvolvimento **0.3.1 - Linhas, frota e operações com MySQL**.
+Versão de desenvolvimento **0.4 - Matrículas anuais e vagas com MySQL**.
 
-Aplicação administrativa baseada no planejamento consolidado v2. Esta versão entrega a fundação, o cadastro de pessoas e o planejamento de transporte; o ciclo de matrícula digital ainda não está implementado.
+Aplicação administrativa baseada no planejamento consolidado v2. Esta versão entrega a fundação, pessoas, transporte e matrículas anuais administrativas. O portal de solicitações dos responsáveis e a geração do termo ainda serão implementados.
 
 ## Implementado
 
@@ -24,6 +24,9 @@ Aplicação administrativa baseada no planejamento consolidado v2. Esta versão 
 - Alocações por período, bloqueio de conflitos de horário e liberação para substituição.
 - Capacidade prevista por data, com valor preservado no histórico da alocação.
 - Histórico das alterações e permissões específicas para frota e alocações.
+- Matrícula única por aluno/ano, rascunho, termo privado e aprovação por servidor autorizado.
+- Vagas por data, transferências, cancelamentos e encerramentos com vigências e histórico.
+- Substituição transacional de veículo com capacidade suficiente para os alunos.
 
 O cadastro ativo de um aluno **não é uma matrícula de transporte**.
 
@@ -119,14 +122,20 @@ O CPF é opcional nesta etapa porque a lista institucional de documentos obrigat
 2. Em **Veículos**, registre placa, modelo, capacidade para alunos e situação operacional.
 3. Em **Operações das linhas**, escolha linha, ano letivo e turno; informe vigência, dias e horário de atendimento.
 4. Clique em **Abrir operação** e aloque um veículo no período desejado, com justificativa.
-5. Consulte a capacidade prevista selecionando uma data.
-6. Para substituir o veículo, clique em **Liberar / substituir**, informe o primeiro dia sem o veículo atual e o motivo. Depois aloque o substituto a partir dessa data.
+5. Consulte a capacidade, a ocupação e as vagas previstas selecionando uma data.
+6. Para substituir o veículo, clique em **Liberar / substituir**, informe a data, o motivo e o substituto. Havendo matrículas, a liberação isolada é bloqueada e a substituição exige capacidade suficiente.
 
 Os períodos incluem as datas inicial e final. Horários contíguos são permitidos; horários sobrepostos com um dia de atendimento em comum são bloqueados. Não há cálculo de deslocamento entre linhas.
 
 Operações com histórico de alocação conservam linha, ano, turno, vigência, dias e horários. Uma mudança de programação requer nova operação. Um veículo já utilizado conserva sua placa; a capacidade só pode mudar depois de liberar alocações vigentes e futuras.
 
-Marcar um veículo como indisponível ou em manutenção mantém as alocações e sinaliza a necessidade de substituição. A capacidade mostrada é a do planejamento registrado; não é um total de vagas livres. Consulte `docs/ETAPA_03.md` para as regras e limites.
+Marcar um veículo como indisponível ou em manutenção mantém as alocações e matrículas e sinaliza a necessidade de substituição. A capacidade e as vagas mostradas refletem o planejamento; os alertas de indisponibilidade precisam ser regularizados. Consulte `docs/ETAPA_03.md` e `docs/ETAPA_04.md`.
+
+## Usar matrículas anuais
+
+Abra **Matrículas anuais**, selecione **Nova matrícula** e informe aluno, ano aberto, responsável autorizado, oferta escolar, datas e operações. Salve o rascunho e anexe o termo PDF assinado externamente no GOV.BR. O servidor autorizado baixa o arquivo, confere a assinatura e os dados, registra o parecer e aprova. Só então as vagas são reservadas.
+
+Use **Transferir atendimento** para mudar dados de uma matrícula aprovada, informando a nova data e o termo correspondente. Em **Encerrar / cancelar**, informe o primeiro dia sem transporte. Consulte [Etapa 04](ETAPA_04.md) para regras, permissões, limites e atualização do banco.
 
 ## Testes
 
@@ -142,7 +151,7 @@ Veja `docs/VALIDACAO.md` para os resultados desta entrega e `docs/MYSQL.md` para
 
 ## Estilos
 
-Os arquivos `public/app.css`, `public/people.css` e `public/transport.css` já acompanham a aplicação. Não é necessário executar npm para abrir a versão entregue.
+Os arquivos `public/app.css`, `public/people.css`, `public/transport.css` e `public/enrollments.css` já acompanham a aplicação. Não é necessário executar npm para abrir a versão entregue.
 
 Para alterar e recompilar o estilo principal:
 
@@ -159,13 +168,13 @@ A configuração local usa `MAIL_MAILER=log`: as mensagens de recuperação são
 
 ## Próximas etapas
 
-- Matrículas anuais, ocupação e controle de vagas das operações.
 - Motoristas, documentação e conformidade da frota.
 - Portal do responsável, documentos e solicitação de matrícula.
-- PDF do termo, upload da versão assinada externamente no GOV.BR e análise humana.
-- Aprovação, matrícula, lista de espera, manutenção e operação diária.
+- Geração do PDF do termo e envio da versão assinada pelo portal.
+- Fila de solicitações, recusa, complementação e lista de espera.
+- Manutenção e operação diária.
 
-Não estão implementadas nesta versão integrações GOV.BR, assinatura automática, validação documental, notificações externas ou matrícula efetiva.
+Não estão implementadas nesta versão integrações GOV.BR, assinatura ou verificação criptográfica automática, notificações externas e reabertura de matrícula terminada. A conferência do termo é humana.
 
 ## Organização do código
 

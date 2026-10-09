@@ -61,13 +61,15 @@ final class TransportService
 
     private function validateOperation(LineOperation $record,array $data,array $before): void
     {
-        if ($record->exists && $record->allocations()->exists()) {
+        if ($record->exists && ($record->allocations()->exists() || $record->enrollmentPeriods()->exists())) {
             foreach (config('transport.resources.operacoes.fields') as $key=>$field) {
                 if (($field['fixed'] ?? false) && $data[$key]!=$before[$key])
                     self::fail($key,'Esta operação já possui histórico de alocação. Crie outra operação para mudar a programação.');
             }
         }
         $year=AcademicYear::findOrFail($data['academic_year_id']);
+        if ($record->exists && $data['status']!=='ATIVA' && app(EnrollmentCapacity::class)->hasReservations($record,today()->toDateString(),$record->ends_on->toDateString()))
+            self::fail('status','Transfira ou encerre as matrículas vigentes e futuras antes de inativar a operação.');
         if ($data['starts_on']<$year->starts_on->format('Y-m-d') || $data['ends_on']>$year->ends_on->format('Y-m-d'))
             self::fail('starts_on','A vigência deve estar dentro das datas do ano letivo.');
         if (!TransportSchedule::hasDay($data['starts_on'],$data['ends_on'],$data['weekdays']))

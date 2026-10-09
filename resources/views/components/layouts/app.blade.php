@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ asset('app.css') }}">
     <link rel="stylesheet" href="{{ asset('people.css') }}">
     <link rel="stylesheet" href="{{ asset('transport.css') }}">
+    <link rel="stylesheet" href="{{ asset('enrollments.css') }}">
     @livewireStyles
 </head>
 <body x-data="{ menu: false }">
@@ -22,6 +23,10 @@
             <p class="nav-label">ALUNOS E FAMÍLIAS</p>
             <a class="nav-link {{ request()->is('pessoas/alunos*') ? 'selected' : '' }}" href="{{ route('people','alunos') }}"><x-icon name="users"/> Alunos</a>
             <a class="nav-link {{ request()->is('pessoas/responsaveis*') ? 'selected' : '' }}" href="{{ route('people','responsaveis') }}"><x-icon name="shield"/> Responsáveis</a>
+            @endcan
+            @can('matriculas.visualizar')
+            <p class="nav-label">MATRÍCULAS</p>
+            <a class="nav-link {{ request()->is('matriculas*') ? 'selected' : '' }}" href="{{ route('enrollments') }}"><x-icon name="school"/> Matrículas anuais</a>
             @endcan
             @can('transporte.visualizar')
             <p class="nav-label">TRANSPORTE</p>
@@ -51,7 +56,7 @@
             @if(session('success'))<div class="notice success" role="status">{{ session('success') }}</div>@endif
             {{ $slot }}
         </main>
-        <footer class="page-footer"><span>Gestão do Transporte Escolar Municipal</span><span>GTEM · v0.3.1</span></footer>
+        <footer class="page-footer"><span>Gestão do Transporte Escolar Municipal</span><span>GTEM · v0.4</span></footer>
     </div>
 </div>
 @livewireScripts

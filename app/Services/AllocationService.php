@@ -37,27 +37,32 @@ final class AllocationService
             }
             $record=VehicleAllocation::create($data+['line_operation_id'=>$op->id,'original_ends_on'=>$data['ends_on'],
                 'capacity_snapshot'=>$vehicle->capacity,'created_by'=>auth()->id()]);
+            app(EnrollmentCapacity::class)->assertCovered($op,$data['starts_on'],$data['ends_on']);
             app(TransportService::class)->record('alocacoes',$record,[],$this->snapshot($record),$data['reason']);
             return $record;
         },3);
     }
-    public function release(int $operationId,int $id,int $version,string $effectiveFrom,string $reason): VehicleAllocation
+    public function release(int $operationId,int $id,int $version,string $effectiveFrom,string $reason,?int $replacementVehicleId=null): VehicleAllocation
     {
         Gate::authorize('alocacoes.gerenciar');
         Validator::make(['effective_from'=>$effectiveFrom,'reason'=>trim($reason)],
             ['effective_from'=>'required|date_format:Y-m-d|after_or_equal:today','reason'=>'required|string|min:10|max:1000'])->validate();
-        return DB::transaction(function () use ($operationId,$id,$version,$effectiveFrom,$reason) {
+        return DB::transaction(function () use ($operationId,$id,$version,$effectiveFrom,$reason,$replacementVehicleId) {
             TransportSchedule::lock();
             $allocation=VehicleAllocation::where('line_operation_id',$operationId)->lockForUpdate()->findOrFail($id);
             if ($allocation->version!==$version) TransportService::fail('form','A alocação foi alterada. Reabra a liberação.');
             if ($allocation->cancelled_at || $effectiveFrom<$allocation->starts_on->format('Y-m-d') || $effectiveFrom>$allocation->ends_on->format('Y-m-d'))
                 TransportService::fail('effective_from','Escolha uma data dentro da vigência atual da alocação.');
             $before=$this->snapshot($allocation);
+            if (!$replacementVehicleId && app(EnrollmentCapacity::class)->hasReservations($allocation->operation,$effectiveFrom,$allocation->ends_on->toDateString()))
+                TransportService::fail('replacement_vehicle_id','Há matrículas neste período. Selecione um substituto ou transfira os alunos antes de liberar o veículo.');
+            $previousEnd=$allocation->ends_on->toDateString();
             if ($effectiveFrom===$allocation->starts_on->format('Y-m-d')) $allocation->cancelled_at=now();
             else $allocation->ends_on=CarbonImmutable::parse($effectiveFrom)->subDay()->format('Y-m-d');
             $allocation->released_at=now(); $allocation->released_by=auth()->id(); $allocation->release_reason=trim($reason);
             $allocation->version++; $allocation->save();
             app(TransportService::class)->record('alocacoes',$allocation,$before,$this->snapshot($allocation),trim($reason));
+            if ($replacementVehicleId) $this->allocate($operationId,['vehicle_id'=>$replacementVehicleId,'starts_on'=>$effectiveFrom,'ends_on'=>$previousEnd,'reason'=>trim($reason)]);
             return $allocation;
         },3);
     }

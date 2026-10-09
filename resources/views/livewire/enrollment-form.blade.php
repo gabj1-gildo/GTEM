@@ -1,0 +1,17 @@
+<div class="form-grid">
+@if($identityEditable)
+<div class="field"><label for="enrollment-student">Aluno</label><select id="enrollment-student" wire:model.live="form.student_id" required><option value="">Selecione</option>@foreach($students as $student)<option value="{{ $student->id }}">{{ $student->name }} · #{{ $student->id }}</option>@endforeach</select></div>
+<div class="field"><label for="enrollment-year">Ano letivo</label><select id="enrollment-year" wire:model.live="form.academic_year_id" required><option value="">Selecione</option>@foreach($years as $year)<option value="{{ $year->id }}">{{ $year->year }} · {{ $year->status }}</option>@endforeach</select></div>
+@endif
+<div class="field"><label for="enrollment-guardian">Responsável pelo termo</label><select id="enrollment-guardian" wire:model="form.guardian_id" required><option value="">Selecione</option>@foreach($guardians as $guardian)<option value="{{ $guardian->id }}">{{ $guardian->name }}</option>@endforeach</select><small>Vínculo vigente com autorização para solicitar transporte.</small></div>
+<div class="field"><label for="enrollment-school">Escola</label><select id="enrollment-school" wire:model="form.school_id" required><option value="">Selecione</option>@foreach($schools as $school)<option value="{{ $school->id }}">{{ $school->name }}</option>@endforeach</select></div>
+<div class="field"><label for="enrollment-grade">Série / ano escolar</label><select id="enrollment-grade" wire:model="form.grade_id" required><option value="">Selecione</option>@foreach($grades as $grade)<option value="{{ $grade->id }}">{{ $grade->name }}</option>@endforeach</select></div>
+<div class="field"><label for="enrollment-shift">Turno</label><select id="enrollment-shift" wire:model.live="form.shift_id" required><option value="">Selecione</option>@foreach($shifts as $shift)<option value="{{ $shift->id }}">{{ $shift->name }}</option>@endforeach</select></div>
+<div class="field"><label for="enrollment-start">Primeiro dia de atendimento</label><input id="enrollment-start" type="date" wire:model="form.starts_on" min="{{ today()->toDateString() }}" required></div>
+<div class="field"><label for="enrollment-end">Último dia de atendimento</label><input id="enrollment-end" type="date" wire:model="form.ends_on" min="{{ today()->toDateString() }}" required></div>
+<fieldset class="field full-width enrollment-operations"><legend>Operações de transporte</legend><p class="footnote">Selecione os atendimentos utilizados, como ida e volta. As operações devem pertencer ao ano e turno escolhidos.</p>
+@forelse($operations as $operation)<label class="enrollment-option" for="enrollment-op-{{ $operation->id }}" wire:key="enrollment-op-{{ $operation->id }}"><input id="enrollment-op-{{ $operation->id }}" type="checkbox" wire:model="form.operation_ids" value="{{ $operation->id }}"><span><strong>{{ $operation->routeLine->code }} · {{ $operation->name }}</strong><small>{{ substr($operation->starts_at,0,5) }}–{{ substr($operation->ends_at,0,5) }} · {{ collect($operation->weekdays)->map(fn($d)=>config('transport.weekdays.'.$d))->join(', ') }} · {{ $operation->starts_on->format('d/m/Y') }} a {{ $operation->ends_on->format('d/m/Y') }}</small></span></label>
+@empty<p>Nenhuma operação disponível para o ano e turno selecionados.</p>@endforelse
+</fieldset>
+<div class="field full-width"><label for="enrollment-reason">Justificativa do registro</label><textarea id="enrollment-reason" wire:model="form.reason" required minlength="10" maxlength="1000" rows="2"></textarea></div>
+</div>

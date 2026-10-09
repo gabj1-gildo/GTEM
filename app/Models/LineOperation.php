@@ -9,4 +9,5 @@ class LineOperation extends Model
     public function academicYear(){ return $this->belongsTo(AcademicYear::class); }
     public function shift(){ return $this->belongsTo(Shift::class); }
     public function allocations(){ return $this->hasMany(VehicleAllocation::class); }
+    public function enrollmentPeriods(){ return $this->belongsToMany(EnrollmentPeriod::class,'enrollment_period_operation'); }
 }

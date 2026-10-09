@@ -10,6 +10,9 @@
     @if($transportStats)<section class="stats-grid" aria-label="Indicadores do transporte">
     @foreach($transportStats as [$label,$count,$resource,$caption])<a href="{{ route('transport',$resource) }}" class="stat-card"><div class="stat-label">{{ $label }}<x-icon name="bus"/></div><strong>{{ $count }}</strong><span>{{ $caption }}</span></a>@endforeach
     </section>@endif
+    @if($enrollmentStats)<section class="stats-grid" aria-label="Indicadores de matrícula">
+    @foreach($enrollmentStats as [$label,$count,$caption])<a href="{{ route('enrollments') }}" class="stat-card"><div class="stat-label">{{ $label }}<x-icon name="school"/></div><strong>{{ $count }}</strong><span>{{ $caption }}</span></a>@endforeach
+    </section>@endif
     <div class="dashboard-columns"><section class="panel">
         <div class="panel-heading"><div><h2>Anos letivos</h2><p>Ciclos cadastrados no sistema</p></div>@can('cadastros.visualizar')<a class="text-link" href="{{ route('catalog','anos-letivos') }}">Ver todos <x-icon name="arrow"/></a>@endcan</div>
         @forelse($years as $year)<div class="year-row"><span class="year-icon"><x-icon name="calendar"/></span><div><strong>Ano letivo {{ $year->year }}</strong><small>{{ $year->starts_on->format('d/m/Y') }} a {{ $year->ends_on->format('d/m/Y') }}</small></div><span class="badge {{ $year->status === 'ABERTO' ? 'green' : 'neutral' }}">{{ ['PLANEJAMENTO'=>'Planejamento','ABERTO'=>'Aberto','ENCERRADO'=>'Encerrado'][$year->status] }}</span></div>@empty<div class="empty-state"><x-icon name="calendar"/><h3>Nenhum ano letivo cadastrado</h3><p>Cadastre o primeiro ciclo para começar.</p></div>@endforelse
